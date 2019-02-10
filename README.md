@@ -10,3 +10,4 @@ https://data.rte-france.com/--Shivam
 
 reading:
 https://pythondata.com/stock-market-forecasting-with-prophet/
+https://github.com/topics/market-data?utf8=%E2%9C%93&after=Y3Vyc29yOjMw 
