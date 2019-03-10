@@ -95,14 +95,22 @@ marseille2 = marseille2[, c(1, 2, 3, 5, 6, 7, 4, 8, 9)]
 toulouseweather = toulouseweather[, c(1, 2, 3, 5, 6, 7, 4, 8, 9)]
 lyonweather = lyonweather[, c(1, 2, 3, 5, 6, 7, 4, 8, 9)]
 
+#Adding column to make 24 rows per day (to match with Intraday)
+paris1$Periods =  rep(24,nrow(paris1))
+
+#Expanding rows of weather data to get 24 rows pr day, one for each hour
+install.packages('splitstackshape')
+library(splitstackshape)
+paris1 = expandRows(paris1, "Periods")
+
 #Loading of Intraday dataset
 intraday = fread('C:\\Users\\John\\Desktop\\IESEG 2nd Semester\\Hackathon\\IntradayContinuousEPEXSPOT.csv')
 colnames(intraday)[colnames(intraday) == 'Date'] <- 'DATE'
 
 #Merging with Paris1 weather data
-#intraday2 = merge(x = intraday, y = paris1, by = "DATE", all = TRUE)
+intraday2 = cbind(intraday, paris1[!names(paris1) %in% names(intraday)])
+intraday2$DATE = NULL
+intraday2$time = NULL
+intraday2$NAME = NULL
 
-#paris1$DATE <- as.Date(paris1$DATE)
-#intraday$TAVG <- sapply(as.Date(intraday$DateTime), function(x) paris1[paris1$DATE==x, "TAVG"])
-
-
+write.csv(intraday2, "intradaywithweather.csv")
