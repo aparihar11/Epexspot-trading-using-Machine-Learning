@@ -113,4 +113,44 @@ intraday2$DATE = NULL
 intraday2$time = NULL
 intraday2$NAME = NULL
 
+#write CSV
 write.csv(intraday2, "intradaywithweather.csv")
+
+#map time of day to certain temperature variable (TPRED aka predicted temperature for that hour)
+#Middle Night (01-04) = #min temp 
+#Early Morning (05-08) = #min temp
+#Late Morning (09-12) = #avg temp
+#Early Afternoon (13-16) = #max temp
+#Rush Hour (17-20) = #avg temp
+#Off-Peak 2 (21-24) = #min temp
+
+install.packages('lubridate')
+library(lubridate)
+library(dplyr)
+
+intraday2 = fread('C:\\Users\\John\\Desktop\\IESEG 2nd Semester\\Hackathon\\intradaywithweather.csv')
+
+intraday2$V1 = NULL
+intraday2$hour = hour(intraday2$DateTime)
+
+intraday2$TPRED[intraday2$hour==1 | intraday2$hour==2 | intraday2$hour==3 | intraday2$hour==4] = 1
+intraday2$TPRED[intraday2$hour==5 | intraday2$hour==6 | intraday2$hour==7 | intraday2$hour==8] = 2
+intraday2$TPRED[intraday2$hour==9 | intraday2$hour==10 | intraday2$hour==11 | intraday2$hour==12] = 3
+intraday2$TPRED[intraday2$hour==13 | intraday2$hour==14 | intraday2$hour==15 | intraday2$hour==16] = 4
+intraday2$TPRED[intraday2$hour==17 | intraday2$hour==18 | intraday2$hour==19 | intraday2$hour==20] = 5
+intraday2$TPRED[intraday2$hour==21 | intraday2$hour==22 | intraday2$hour==23 | intraday2$hour==0] = 6
+
+intraday2 = intraday2 %>%
+  mutate(TPRED = ifelse(TPRED == 1, TMIN, ifelse(TPRED == 2, TMIN, ifelse(TPRED == 3, TAVG,
+                 ifelse(TPRED == 4, TMAX, ifelse(TPRED == 5, TAVG, ifelse(TPRED == 6, TMIN, NA)))))))
+      
+#Removing uneccessary columns and renaming basetable
+intraday2$hour = NULL
+basetable = intraday2
+
+#write CSV of basetable
+write.csv(basetable, "basetable.csv")
+         
+         
+         
+      
