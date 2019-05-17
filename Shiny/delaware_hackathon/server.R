@@ -13,15 +13,30 @@ library(Cairo)
 library(data.table)
 library(lubridate)
 library(DT)
+library(tidyr)
 
 
-
+###reading previous dataset
 d2<-read.csv("C:/Users/aparihar/Documents/GitHub/electric_delware/datamart.csv") 
+d2$fromdate<-as.Date(d2$fromdate,format="%d/%m/%Y")
 
+
+###adding current dataset
 d3<-read.csv("C:/Users/aparihar/Documents/GitHub/electric_delware/basetableApril14.csv") 
 d2$datetime=ISOdatetime(year(d2$fromdate), month(d2$fromdate), day(d2$fromdate), d2$fromtime, 0, 0)
 d3$datetime=ISOdatetime(year(d3$fromdate), month(d3$fromdate), day(d3$fromdate), d3$fromtime, 0, 0)
-#d2 = subset(d2, select = -c(fromdate,fromtime,ï..) )
+
+###merging data
+myvars <- c("datetime", "ActualTotalLoad")
+newdata <- d2[myvars]
+d1<-merge(newdata,d3,by="datetime",all = TRUE)
+
+
+###skewness between  forecast vs actual
+
+d1$diffloadforecast<-as.integer(d1$Dayahead_Load.Forecast-d1$ActualTotalLoad)
+
+
 options(shiny.maxRequestSize=30*1024^2)
 
 #getwd()
@@ -35,7 +50,7 @@ server <- function(input, output,session) {
   
   
   output$table <- DT::renderDataTable({
-    d2
+    d1
   })
   
   
@@ -47,14 +62,14 @@ server <- function(input, output,session) {
   
   ###########Graph 2############
   output$graph2<-renderPlotly({
-    output=TopWage()
+    output=ActualLoad()
     output
     
   })
   
   ###########Graph 3############
   output$graph3<-renderPlotly({
-    output=SuperStars()
+    output=Temperature()
     output
   })
   
@@ -130,7 +145,27 @@ server <- function(input, output,session) {
     
   })
   
-
+  Temperature<-reactive({
+    d4 <- d3 %>%
+      select(datetime, TMIN, TMAX,TAVG) %>%
+      gather(key = "variable", value = "value", -datetime)
+    head(d4, 3)
+    ggplot(d4, aes(datetime, value)) + geom_line() +
+      xlab("") + ylab("Temerature Variation")
+    ggplot(d4, aes(x = datetime, y = value)) + 
+      geom_line(aes(color = variable), size = 1) +
+      scale_color_manual(values = c("#00AFBB", "#E7B800","#00e70b")) +
+      theme_minimal()
+  })
+  
+  ActualvsforecastLoad<-reactive({
+    
+    loaddiff <- d1 %>% filter(datetime >= as.POSIXct("2016-07-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2016-08-01 01:00:00", tz="UTC")) 
+      ggplot(loaddiff, aes(datetime, diffloadforecast)) + geom_line() +
+      xlab("") + ylab("Skewness Load Forecast") +  geom_line(aes(color = "#00AFBB"), size = 1)
+    
+  })
+  
   
   
 } 
