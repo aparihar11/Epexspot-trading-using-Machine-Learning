@@ -1,5 +1,10 @@
-#install.packages("shinydashboard")
-#install.packages("shinycssloaders")
+# install.packages("shinydashboard")
+# install.packages("shinycssloaders")
+# install.packages("dplyr")
+# install.packages("lubridate")
+# install.packages("tidyr")
+# install.packages("ggplot2")
+# install.packages("plotly")
 library(dplyr)
 library(haven)
 library(shiny)
@@ -14,29 +19,33 @@ library(data.table)
 library(lubridate)
 library(DT)
 library(tidyr)
-
-
+#load("database.RData")
+Sys.setenv(TZ='GMT')
 ###reading previous dataset
-d2<-read.csv("C:/Users/aparihar/Documents/GitHub/electric_delware/datamart.csv") 
-d2$fromdate<-as.Date(d2$fromdate,format="%d/%m/%Y")
+# d2<-read.csv("C:/Users/aparihar/Documents/GitHub/electric_delware/datamart.csv")
+# d2$fromdate<-as.Date(d2$fromdate,format="%d/%m/%Y")
+# 
+# 
+# ###adding current dataset
+# d3<-read.csv("dataset.csv")
+# d2$datetime=ISOdatetime(year(d2$fromdate), month(d2$fromdate), day(d2$fromdate), d2$fromtime, 0, 0)
+# d3$datetime=ISOdatetime(year(d3$fromdate), month(d3$fromdate), day(d3$fromdate), d3$fromtime, 0, 0)
+# 
+# ###merging data
+# myvars <- c("datetime", "ActualTotalLoad")
+# newdata <- d2[myvars]
+# d1<-merge(newdata,d3,by="datetime",all = TRUE)
+# 
+# d1<-d1[-which(d1$IntradayPrice %in% boxplot.stats(d1$IntradayPrice)$out), ]
+# ###skewness between  forecast vs actual
+# 
+# d1$diffloadforecast<-as.integer(d1$Dayahead_Load.Forecast-d1$ActualTotalLoad)
+#setwd("C:\\Users\\aparihar\\Documents\\GitHub\\electric_delware\\Shiny\\delaware_hackathon")
+d1<-read.csv("dataset.csv")
+d1$datetime<-as.POSIXct(d1$datetime)
 
-
-###adding current dataset
-d3<-read.csv("C:/Users/aparihar/Documents/GitHub/electric_delware/basetableApril14.csv") 
-d2$datetime=ISOdatetime(year(d2$fromdate), month(d2$fromdate), day(d2$fromdate), d2$fromtime, 0, 0)
-d3$datetime=ISOdatetime(year(d3$fromdate), month(d3$fromdate), day(d3$fromdate), d3$fromtime, 0, 0)
-
-###merging data
-myvars <- c("datetime", "ActualTotalLoad")
-newdata <- d2[myvars]
-d1<-merge(newdata,d3,by="datetime",all = TRUE)
-
-
-###skewness between  forecast vs actual
-
-d1$diffloadforecast<-as.integer(d1$Dayahead_Load.Forecast-d1$ActualTotalLoad)
-
-
+Intradaychart <- d1 %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC"))
+dayaheadchart <- d1 %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC"))
 options(shiny.maxRequestSize=30*1024^2)
 
 #getwd()
@@ -50,7 +59,7 @@ server <- function(input, output,session) {
   
   
   output$table <- DT::renderDataTable({
-    d1
+    d1[1:200,]
   })
   
   
@@ -77,7 +86,7 @@ server <- function(input, output,session) {
   
   ###########Graph 4############
   output$graph4<-renderPlotly({
-    new<-YoungestSquad()
+    new<-ActualvsforecastLoad()
     new
   })
   
@@ -102,7 +111,7 @@ server <- function(input, output,session) {
   
   
   output$graph8<-renderPlotly({
-    new<-VariationAge()
+    new<-na()
     new
   })
   
@@ -132,22 +141,23 @@ server <- function(input, output,session) {
   ########### Day Ahead ##############
   DayAhead<-reactive({
     
-    ggplot(d3, aes(datetime, DayaheadPrice._EUR_MWh)) + geom_line() +
-      xlab("") + ylab("Daily Views")
+    ggplot(dayaheadchart, aes(datetime, DayaheadPrice._EUR_MWh)) + geom_line() +
+      xlab("2018") + ylab("Day Ahead Price")
     
   })
   
   ########### Intraday Ahead Price ##############
   Intraday<-reactive({
-    
-    ggplot(d3, aes(datetime, IntradayPrice)) + geom_line() +
-      xlab("") + ylab("Daily Views")
+###Manual range test   
+     
+    ggplot(Intradaychart, aes(datetime, IntradayPrice)) + geom_line() +
+      xlab("2018") + ylab("Intra Day Price")
     
   })
   
   Temperature<-reactive({
-    d4 <- d3 %>%
-      select(datetime, TMIN, TMAX,TAVG) %>%
+    d4 <- d1 %>%
+      select(datetime, TMIN, TMAX,TAVG) %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC")) %>%
       gather(key = "variable", value = "value", -datetime)
     head(d4, 3)
     ggplot(d4, aes(datetime, value)) + geom_line() +

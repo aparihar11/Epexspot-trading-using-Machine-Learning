@@ -1,5 +1,14 @@
-ui <- dashboardPage(skin = "red",
-                    dashboardHeader(title = "Delaware Electricity Price Prediction"),
+library(plotly)
+library(shinydashboard)
+title<-tags$a(href='https://www.delawareconsulting.com/en-us/',
+              tags$img(src='img22.png', height='50', width='50'),
+              'Trading Desk')
+
+
+
+
+ui <- shinydashboard::dashboardPage(skin = "red",
+                    dashboardHeader(title = title),
                     
                     dashboardSidebar(width = 350,
                                      tags$head(
@@ -14,7 +23,7 @@ ui <- dashboardPage(skin = "red",
                                                 menuItem("Intra Day Price", tabName = "da1", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Day Ahead Price", tabName = "da2", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Temperature Variation", tabName = "da3", icon=icon("triangle-right", lib = 'glyphicon')),
-                                                menuItem("Load Variation", tabName = "da4", icon=icon("triangle-right", lib = 'glyphicon')),
+                                                menuItem("Forecast Skewness", tabName = "da4", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Weekly price", tabName = "da5", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Wind Forecast", tabName = "da6", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Wind Energy Solar Energy Temperature", tabName = "da7", icon=icon("triangle-right", lib = 'glyphicon')),
@@ -67,7 +76,7 @@ ui <- dashboardPage(skin = "red",
                         tabItem(tabName = "da4",
                                 # FirST tab content
                                 
-                                tabPanel("Youngest Squad",
+                                tabPanel("Load Forecast Skewness",
                                          wellPanel(fluidRow(plotlyOutput("graph4")))
                                 )
                         ),
