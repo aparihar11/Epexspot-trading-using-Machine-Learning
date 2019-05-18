@@ -30,9 +30,13 @@ ui <- shinydashboard::dashboardPage(skin = "red",
                                                
                                                 menuItem("Wind Energy Production", tabName = "da8", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Production based on resource", tabName = "da9", icon=icon("triangle-right", lib = 'glyphicon')),
-                                      dateRangeInput("daterange1", "Date range:",
-                                                               start = "2001-01-01",
-                                                               end   = "2010-12-31")                
+                                                dateRangeInput('date',
+                                                               label = 'Date Range',
+                                                               start = Sys.Date() - 180, 
+                                                               end = Sys.Date(),
+                                                               max = Sys.Date()
+                                                )
+                                                    
                                                 
                                        )
                                        

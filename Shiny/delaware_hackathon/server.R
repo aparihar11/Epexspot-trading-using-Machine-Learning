@@ -38,11 +38,34 @@ Sys.setenv(TZ='GMT')
 # 
 # d1$diffloadforecast<-as.integer(d1$Dayahead_Load.Forecast-d1$ActualTotalLoad)
 #setwd("C:\\Users\\aparihar\\Documents\\GitHub\\electric_delware\\Shiny\\delaware_hackathon")
-d1<-read.csv("dataset.csv")
-d1$datetime<-as.POSIXct(d1$datetime)
+setwd("C:/Users/aparihar/Documents/GitHub/electric_delware")
+#d1<-read.csv("dataset.csv")
 
-Intradaychart <- d1 %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC"))
-dayaheadchart <- d1 %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC"))
+#d1$datetime<-as.POSIXct(d1$datetime)
+
+
+
+#Intradaychart <- d1 %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC"))
+#dayaheadchart <- d1 %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC"))
+
+
+####WIND DATA AGGREGATION ############
+finaltable<-read.csv("final_basetable.csv")
+
+####CONVERT DATE FOR DAILY WEEKLY ANALYSIS ###########
+finaldaily<-read.csv("final_basetable.csv")
+finaldaily$fromdate<-as.Date(finaldaily$fromdate,format="%m/%d/%Y")
+finaldaily<-finaldaily[,-2]
+
+
+
+
+
+######AGGREGATE DAILY/WEEKLY ##################
+
+finaldaily<-aggregate(. ~fromdate, data=finaldaily, mean, na.rm=TRUE)
+finaldailydecreasing<-finaldaily[ order(finaldaily$fromdate, decreasing = TRUE ),]
+
 options(shiny.maxRequestSize=30*1024^2)
 
 #getwd()
@@ -54,9 +77,16 @@ server <- function(input, output,session) {
 #    filter(d2, between(datetime ,input$datetime[1], input$datetime[2]))
  # })
   
+  subData <- reactive({
+    finaldaily %>%
+      filter(as.Date(fromdate) >= as.Date(input$date[1]),as.Date(fromdate) <= as.Date(input$date[2])
+  )
+  })
+
+
   
   output$table <- DT::renderDataTable({
-    tail(d1,n=200)
+    finaldailydecreasing[1:200,]
   })
   
   
@@ -90,14 +120,16 @@ server <- function(input, output,session) {
   
   ###########Graph 7############
   output$graph5<-renderPlotly({
-    new<-DayAhead()
-    new
+    ggplot( data=subData(), aes(fromdate, DayaheadPrice._EUR_MWh)) + geom_line() +
+      xlab("2018") + ylab("Day Ahead Price") + scale_x_date(limits = c(input$date[1], input$date[2]))
+    
   })
   
   ###########Graph 8############
   output$graph6<-renderPlotly({
-    new<-Intraday()
-    new
+    ggplot( data=subData(), aes(fromdate, DayaheadPrice._EUR_MWh)) + geom_line() +
+      xlab("2018") + ylab("Day Ahead Price") + scale_x_date(limits = c(input$date[1], input$date[2]))
+    
   })
   
   ###########Graph 9############
@@ -138,23 +170,24 @@ server <- function(input, output,session) {
   ########### Day Ahead ##############
   DayAhead<-reactive({
     
-    ggplot(dayaheadchart, aes(datetime, DayaheadPrice._EUR_MWh)) + geom_line() +
-      xlab("2018") + ylab("Day Ahead Price")
+    ggplot( subData, aes(fromdate, DayaheadPrice._EUR_MWh)) + geom_line() +
+      xlab("2018") + ylab("Day Ahead Price") + scale_x_date(limits = c(input$date[1], input$date[2]))
     
   })
   
+
   ########### Intraday Ahead Price ##############
   Intraday<-reactive({
 ###Manual range test   
      
-    ggplot(Intradaychart, aes(datetime, IntradayPrice)) + geom_line() +
-      xlab("2018") + ylab("Intra Day Price")
+    ggplot(subData, aes(fromdate, IntradayPrice)) + geom_line() +
+      xlab("2018") + ylab("Intra Day Price") + scale_x_date(limits = c(input$date[1], input$date[2]))
     
   })
   
   Temperature<-reactive({
-    d4 <- d1 %>%
-      select(datetime, TMIN, TMAX,TAVG) %>% filter(datetime >= as.POSIXct("2018-01-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2018-12-31 01:00:00", tz="UTC")) %>%
+    d4 <- finaldaily %>%
+      select(datetime, TMIN, TMAX,TAVG)  %>%
       gather(key = "variable", value = "value", -datetime)
     head(d4, 3)
     ggplot(d4, aes(datetime, value)) + geom_line() +
@@ -167,7 +200,7 @@ server <- function(input, output,session) {
   
   ActualvsforecastLoad<-reactive({
     
-    loaddiff <- d1 %>% filter(datetime >= as.POSIXct("2016-07-01 01:00:00", tz="UTC") & datetime <= as.POSIXct("2016-08-01 01:00:00", tz="UTC")) 
+    loaddiff <- finaldaily %>% 
       ggplot(loaddiff, aes(datetime, diffloadforecast)) + geom_line() +
       xlab("") + ylab("Skewness Load Forecast") +  geom_line(aes(color = "#00AFBB"), size = 1)
     
