@@ -27,10 +27,7 @@ Sys.setenv(TZ='GMT')
 # 
 # 
 # ###adding current dataset
-# d3<-read.csv("dataset.csv")
-# d2$datetime=ISOdatetime(year(d2$fromdate), month(d2$fromdate), day(d2$fromdate), d2$fromtime, 0, 0)
-# d3$datetime=ISOdatetime(year(d3$fromdate), month(d3$fromdate), day(d3$fromdate), d3$fromtime, 0, 0)
-# 
+
 # ###merging data
 # myvars <- c("datetime", "ActualTotalLoad")
 # newdata <- d2[myvars]
@@ -59,7 +56,7 @@ server <- function(input, output,session) {
   
   
   output$table <- DT::renderDataTable({
-    d1[1:200,]
+    tail(d1,n=200)
   })
   
   
