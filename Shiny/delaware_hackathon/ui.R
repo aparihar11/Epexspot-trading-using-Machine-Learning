@@ -25,16 +25,16 @@ ui <- shinydashboard::dashboardPage(skin = "red",
                                                 menuItem("Temperature Variation", tabName = "da3", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Forecast Skewness", tabName = "da4", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Weekly price", tabName = "da5", icon=icon("triangle-right", lib = 'glyphicon')),
-                                                menuItem("Wind Forecast", tabName = "da6", icon=icon("triangle-right", lib = 'glyphicon')),
+                                                menuItem("Wind Speed Paris", tabName = "da6", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Wind Energy Solar Energy Temperature", tabName = "da7", icon=icon("triangle-right", lib = 'glyphicon')),
                                                
                                                 menuItem("Wind Energy Production", tabName = "da8", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Production based on resource", tabName = "da9", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 dateRangeInput('date',
                                                                label = 'Date Range',
-                                                               start = Sys.Date() - 180, 
-                                                               end = Sys.Date(),
-                                                               max = Sys.Date()
+                                                               start = "2018-01-01", 
+                                                               end = "2018-12-31",
+                                                               max = "2018-12-31"
                                                 )
                                                     
                                                 
@@ -85,48 +85,14 @@ ui <- shinydashboard::dashboardPage(skin = "red",
                                 )
                         ),
                         
-                        tabItem(tabName = "da7",
+                        tabItem(tabName = "da6",
                                 # FirST tab content
                                 
-                                tabPanel("Most Unfit",
-                                         wellPanel(fluidRow(DT::dataTableOutput("graph7")))
+                                tabPanel("WIND SPEED",
+                                         wellPanel(fluidRow(plotlyOutput("graph1")))
                                 )
-                        ),
-                        tabItem(tabName = "da8",
-                                
-                                tabPanel("Variation Age",
-                                         wellPanel(fluidRow(plotlyOutput("graph8")))
-                                         
-                                )                
-                        ),
-                        tabItem(tabName = "da9",
-                                
-                                tabPanel("Age vs Wage",
-                                         wellPanel(fluidRow(plotlyOutput("graph9")))
-                                         
-                                )                
                         )
-                        # tabItem(tabName = "da10",
-                        #         
-                        #         tabPanel("Best Clean Finishers",
-                        #                  wellPanel(fluidRow( DT::dataTableOutput("graph10")))
-                        #                  
-                        #         )
-                        # ),
-                        # tabItem(tabName = "da11",
-                        #         
-                        #         tabPanel("VolleyGoal_85",
-                        #                  wellPanel(fluidRow( DT::dataTableOutput("graph11")))
-                        #                  
-                        #         )
-                        # ),
-                        # tabItem(tabName = "da12",
-                        #         
-                        #         tabPanel("Penalties",
-                        #                  wellPanel(fluidRow( DT::dataTableOutput("graph12")))
-                        #                  
-                        #         )
-                        # )
+                       
                         
                       ))
                     
