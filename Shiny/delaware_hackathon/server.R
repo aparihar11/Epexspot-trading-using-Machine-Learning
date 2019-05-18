@@ -20,31 +20,40 @@ library(lubridate)
 library(DT)
 library(tidyr)
 
+
+###SET ENVIROMENTAL VARIABLE
 Sys.setenv(TZ='GMT')
 
-
-# 
-# d1<-d1[-which(d1$IntradayPrice %in% boxplot.stats(d1$IntradayPrice)$out), ]
-# ###skewness between  forecast vs actual
-# 
-# d1$diffloadforecast<-as.integer(d1$Dayahead_Load.Forecast-d1$ActualTotalLoad)
-#setwd("C:\\Users\\aparihar\\Documents\\GitHub\\electric_delware\\Shiny\\delaware_hackathon")
+# SET WORKING DIRECTORY
 setwd("C:/Users/aparihar/Documents/GitHub/electric_delware")
 
 
+######DATAMART DESCRIPTIVE ANALYTICS########
+datamarthourly<-read.csv("datamart.csv")
+datamarthourly$fromdate<-as.Date(datamarthourly$fromdate,format="%d/%m/%Y")
+datamarthourly<-datamarthourly[,-c(1,3,22,23)]
+datamartdaily<-aggregate(. ~fromdate, data=datamarthourly, mean, na.rm=TRUE)
+datamartdaily$diffloadforecast<-as.integer(datamartdaily$Dayahead_Load.Forecast-datamartdaily$ActualTotalLoad)
 
-####WIND DATA AGGREGATION ############
-finaltable<-read.csv("final_basetable.csv")
 
 ####CONVERT DATE FOR DAILY WEEKLY ANALYSIS ###########
-finaldaily<-read.csv("final_basetable.csv")
-finaldaily$fromdate<-as.Date(finaldaily$fromdate,format="%m/%d/%Y")
-finaldaily<-finaldaily[,-2]
+finalhourly<-read.csv("final_basetable.csv")
+finalhourly$fromdate<-as.Date(finalhourly$fromdate,format="%m/%d/%Y")
+finalhourly<-finalhourly[,-2]
 
+write.csv(datamartdaily, file="descriptive.csv")
+write.csv(finaldaily,file="finaldaily.csv")
 ######AGGREGATE DAILY/WEEKLY ##################
 
-finaldaily<-aggregate(. ~fromdate, data=finaldaily, mean, na.rm=TRUE)
-finaldailydecreasing<-finaldaily[ order(finaldaily$fromdate, decreasing = TRUE ),]
+finaldaily<-aggregate(. ~fromdate, data=finalhourly, mean, na.rm=TRUE)
+
+
+# d1<-d1[-which(d1$IntradayPrice %in% boxplot.stats(d1$IntradayPrice)$out), ]
+# ###skewness between  forecast vs actual
+# 
+
+
+
 
 options(shiny.maxRequestSize=30*1024^2)
 
