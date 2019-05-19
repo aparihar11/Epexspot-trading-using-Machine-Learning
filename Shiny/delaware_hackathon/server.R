@@ -25,35 +25,18 @@ library(tidyr)
 Sys.setenv(TZ='GMT')
 
 # SET WORKING DIRECTORY
-# setwd("C:/Users/aparihar/Documents/GitHub/electric_delware")
+ #setwd("C:/Users/aparihar/Documents/GitHub/electric_delware")
  datamartdaily<-read.csv("descriptive.csv")
  finaldaily<-read.csv("finaldaily.csv")
  datamartdaily$fromdate<-as.Date(datamartdaily$fromdate)
  finaldaily$fromdate<-as.Date(finaldaily$fromdate)
 
-# ######DATAMART DESCRIPTIVE ANALYTICS########
-# datamarthourly<-read.csv("datamart.csv")
-# datamarthourly$fromdate<-as.Date(datamarthourly$fromdate,format="%d/%m/%Y")
-# datamarthourly<-datamarthourly[,-c(1,3,22,23)]
-# datamartdaily<-aggregate(. ~fromdate, data=datamarthourly, mean, na.rm=TRUE)
-# datamartdaily$diffloadforecast<-as.integer(datamartdaily$Dayahead_Load.Forecast-datamartdaily$ActualTotalLoad)
-# 
-# 
-# ####CONVERT DATE FOR DAILY WEEKLY ANALYSIS ###########
-# finalhourly<-read.csv("final_basetable.csv")
-# finalhourly$fromdate<-as.Date(finalhourly$fromdate,format="%m/%d/%Y")
-# finalhourly<-finalhourly[,-2]
-# finaldaily<-aggregate(. ~fromdate, data=finalhourly, mean, na.rm=TRUE)
-# write.csv(datamartdaily, file="descriptive.csv")
-# write.csv(finaldaily,file="finaldaily.csv")
-######AGGREGATE DAILY/WEEKLY ##################
+ 
+ #WIND FORECASTED DATA
+windforecast<-read.csv("windforecastdaily.csv")
+windforecast$date<-as.Date(windforecast$date)
 
 
-
-
-# d1<-d1[-which(d1$IntradayPrice %in% boxplot.stats(d1$IntradayPrice)$out), ]
-# ###skewness between  forecast vs actual
-# 
 
 
 
@@ -83,6 +66,24 @@ server <- function(input, output,session) {
        filter(as.Date(fromdate) >= as.Date(input$date[1]),as.Date(fromdate) <= as.Date(input$date[2])
        )
    })
+   
+   RelationWind <- reactive({
+     finaldaily %>%
+       select(fromdate,IntradayPrice,DayaheadPrice._EUR_MWh,windspeedKmph)  %>%
+       gather(key = "variable", value = "value", -fromdate) %>%
+       filter(as.Date(fromdate) >= as.Date(input$date[1]),as.Date(fromdate) <= as.Date(input$date[2])
+       )
+   })
+   
+   Intraddayvddayahead <- reactive({
+     finaldaily %>%
+       select(fromdate,IntradayPrice,DayaheadPrice._EUR_MWh)  %>%
+       gather(key = "variable", value = "value", -fromdate) %>%
+       filter(as.Date(fromdate) >= as.Date(input$date[1]),as.Date(fromdate) <= as.Date(input$date[2])
+       )
+   })
+   
+  
    
    
    
@@ -127,19 +128,39 @@ server <- function(input, output,session) {
   
   ###########Graph 5 INTRADAY      ############
   output$graph5<-renderPlotly({
-    ggplot( data=subData(), aes(fromdate, IntradayPrice)) + geom_line() +
-      xlab("2018") + ylab("Day Ahead Price") + scale_x_date(limits = c(input$date[1], input$date[2]))
+    ggplot( data=subData(), aes(fromdate, IntradayPrice)) + geom_line() + 
+      xlab("2018") + ylab("IntraDayPrice") + scale_x_date(limits = c(input$date[1], input$date[2])) + geom_line(aes(color = "#00AFBB"), size = 1)
     
   })
   
   ###########Graph 6 DAYAHEAD       ############
   output$graph6<-renderPlotly({
-    ggplot( data=subData(), aes(fromdate, DayaheadPrice._EUR_MWh)) + geom_line() +
-      xlab("2018") + ylab("Day Ahead Price") + scale_x_date(limits = c(input$date[1], input$date[2]))
-    
+    ggplot( data=subData(), aes(fromdate, DayaheadPrice._EUR_MWh)) + geom_line() + 
+      xlab("2018") + ylab("IntraDayPrice") + scale_x_date(limits = c(input$date[1], input$date[2])) + geom_line(aes(color = "#00AFBB"), size = 1)
   })
+   
+   ###########Graph 7 WIND VS PRICE       ############
+   output$graph7<-renderPlotly({
+     ggplot( data=RelationWind(), aes(fromdate, value)) +  geom_line(aes(color = variable), size = 1) +
+       scale_color_manual(values = c("#00AFBB", "#E7B800","#00e70b")) +
+       theme_minimal() + scale_x_date(limits = c(input$date[1], input$date[2]))
+     
+   })
+   
+   ###########Graph 8 WIND FORECAST       ############
+   output$graph8<-renderPlotly({
+     
+     ggplot( data = windforecast, aes( date, speed )) + geom_line() 
+   })
   
-
+   ###########Graph 9 INTRA VS DAYAHEAD       ############
+   output$graph9<-renderPlotly({
+     ggplot( data=Intraddayvddayahead(), aes(fromdate, value)) +  geom_line(aes(color = variable), size = 1) +
+       scale_color_manual(values = c("#00AFBB", "#E7B800")) +
+       theme_minimal() + scale_x_date(limits = c(input$date[1], input$date[2]))
+     
+   })
+   
  
 
 } 

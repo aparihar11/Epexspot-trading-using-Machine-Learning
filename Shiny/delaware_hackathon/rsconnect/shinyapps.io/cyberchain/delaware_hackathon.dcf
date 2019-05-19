@@ -5,9 +5,9 @@ account: cyberchain
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 935504
-bundleId: 2094044
+bundleId: 2094220
 url: https://cyberchain.shinyapps.io/delaware_hackathon/
-when: 1558221835.51647
+when: 1558233911.45272
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|database.RData|dataset.csv|www/delaware.png
+ignoredFiles: www/delaware.png

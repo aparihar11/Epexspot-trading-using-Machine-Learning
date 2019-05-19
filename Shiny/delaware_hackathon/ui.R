@@ -22,19 +22,18 @@ ui <- shinydashboard::dashboardPage(skin = "red",
                                        menuItem("Menu", tabName = "Files", icon=icon("scale", lib = 'glyphicon'),
                                                 menuItem("Intra Day Price", tabName = "da1", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Day Ahead Price", tabName = "da2", icon=icon("triangle-right", lib = 'glyphicon')),
+                                                menuItem("INTRADAY VS DAYAHEAD", tabName = "da8", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Temperature Variation", tabName = "da3", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Forecast Skewness", tabName = "da4", icon=icon("triangle-right", lib = 'glyphicon')),
-                                                menuItem("Weekly price", tabName = "da5", icon=icon("triangle-right", lib = 'glyphicon')),
+                                                menuItem("Forecast Wind", tabName = "da5", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 menuItem("Wind Speed Paris", tabName = "da6", icon=icon("triangle-right", lib = 'glyphicon')),
-                                                menuItem("Wind Energy Solar Energy Temperature", tabName = "da7", icon=icon("triangle-right", lib = 'glyphicon')),
-                                               
-                                                menuItem("Wind Energy Production", tabName = "da8", icon=icon("triangle-right", lib = 'glyphicon')),
-                                                menuItem("Production based on resource", tabName = "da9", icon=icon("triangle-right", lib = 'glyphicon')),
+                                                menuItem("WIND VS INTRADAY VS DAYAHEAD", tabName = "da7", icon=icon("triangle-right", lib = 'glyphicon')),
+                                                menuItem("MODEL BASED TRADING", tabName = "da9", icon=icon("triangle-right", lib = 'glyphicon')),
                                                 dateRangeInput('date',
                                                                label = 'Date Range',
-                                                               start = "2018-01-01", 
+                                                               start = "2018-12-01", 
                                                                end = "2018-12-31",
-                                                               max = "2018-12-31"
+                                                               max = "2019-12-31"
                                                 )
                                                     
                                                 
@@ -85,13 +84,38 @@ ui <- shinydashboard::dashboardPage(skin = "red",
                                 )
                         ),
                         
+                        tabItem(tabName = "da5",
+                                # FirST tab content
+                                
+                                tabPanel("WIND FORECAST",
+                                         wellPanel(fluidRow(plotlyOutput("graph8")))
+                                )
+                        ),
+                        
                         tabItem(tabName = "da6",
                                 # FirST tab content
                                 
                                 tabPanel("WIND SPEED",
                                          wellPanel(fluidRow(plotlyOutput("graph1")))
                                 )
+                        ),
+                        
+                        tabItem(tabName = "da7",
+                                # FirST tab content
+                                
+                                tabPanel("WIND VS PRICE",
+                                         wellPanel(fluidRow(plotlyOutput("graph7")))
+                                )
+                        ),
+                        
+                        tabItem(tabName = "da8",
+                                # FirST tab content
+                                
+                                tabPanel("INTRADAY vs DAY AHEAD",
+                                         wellPanel(fluidRow(plotlyOutput("graph9")))
+                                )
                         )
+                        
                        
                         
                       ))
