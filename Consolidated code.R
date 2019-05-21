@@ -252,25 +252,3 @@ colnames(basetable)[3] <- "IntradayPrice"
 #save basetable at this point
 write.csv(basetable,file="basetableapril14.csv")
 
-###
-d2=basetable
-
-#library(lubridate)
-#remove any duplicate obervations and fix date column
-d2$datetime=ISOdatetime(year(d2$fromdate), month(d2$fromdate), day(d2$fromdate), d2$fromtime, 0, 0)
-d2$Year=year(d2$fromdate)
-d2$Month=month(d2$fromdate)
-d2$day=day(d2$fromdate)
-d2=unique(d2)
-d2$fromdate=NULL
-d2$fromtime=NULL
-d2$Year=NULL
-d2$Month=NULL
-d2$day=NULL
-d2 = d2[,c(17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16)]
-d2$Target=ifelse(d2$PriceDIFF>sd(d2$PriceDIFF),1,0)
-d2=as.data.frame(d2)
-d2 = arrange(d2,datetime)
-
-######################
-#Balance data, add lag variables and Beginning of modelling phase
